@@ -5,7 +5,6 @@ const auth = require("../middleware/auth");
 const multer = require("multer");
 const sharp = require("sharp");
 const { storage } = require("../cloudinary/index");
-const { cloudinary } = require("../cloudinary/index");
 
 router.post("/users", async (req, res) => {
   const user = new User(req.body);

@@ -17,8 +17,12 @@ info:
 tags:
   - name: User
     description: "Manages Task-Manager Users"
+  - name: Tasks
+    description: "Manages Users Tasks"
 
 schemes: [http, https]
+
+# USERS ENDPOINTS
 
 paths:
   /users:
@@ -292,6 +296,100 @@ paths:
           description: Avatar deleted
         500:
           description: Something went wrong
+
+  # TASKS ENDPOINTS
+
+  /tasks:
+    post:
+      tags:
+        - Tasks
+      security:
+        - bearerAuth: []
+      summary: Creating tasks
+      description: Endpoint for creating tasks
+      produce:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: user
+          description: user details that needs to be added to the database
+          required: true
+          schema:
+            type: object
+            properties:
+              description:
+                type: string
+              completed:
+                type: boolean
+      responses:
+        201:
+          description: Created
+          schema:
+            type: object
+            properties:
+              description:
+                type: string
+                example: Walk the dog
+              completed:
+                type: boolean
+                example: false
+              owner:
+                type: string
+                example: 123456789
+              _id:
+                type: string
+                example: 123456789
+              createdAt:
+                type: string
+                example: 2022-05-12T00:32:43.554+00:00
+              updatedAt:
+                type: string
+                example: 2022-05-13T10:11:56.870+00:
+      400:
+        description: Bad Request
+
+    get:
+      tags:
+        - Tasks
+      security:
+        - bearerAuth: []
+      summary: Get tasks
+      description: Gets all users tasks
+      produce:
+        - application/json 
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              type: object              
+              properties:
+                description:
+                  type: string
+                  example: Walk the dog
+                completed:
+                  type: boolean
+                  example: false
+                owner:
+                  type: string
+                  example: 123456789
+                _id:
+                  type: string
+                  example: 123456789
+                createdAt:
+                  type: string
+                  example: 2022-05-12T00:32:43.554+00:00
+                updatedAt:
+                  type: string
+                  example: 2022-05-13T10:11:56.870+00:
+          500:
+            description: Something went wrong
+
+
+# COMPONENTS
 
 securityDefinitions:
   bearerAuth:
