@@ -1,0 +1,300 @@
+# openapi: "3.0.0"
+swagger: "2.0"
+info:
+  title: Task-Manager-Api
+  description: Web app with database and authenetication that maps users with their created tasks
+  version: 1.0.0
+  contact:
+    email: ayeola05@gmail.com
+  # liscence:
+  #   name: Apache 2.0
+  #   url: "http://apache.org/"
+  servers:
+    -url: "http://localhost:3000"
+    description: This is my local server
+    # -url: "http://company.com"
+    # description: This is my company server
+tags:
+  - name: User
+    description: "Manages Task-Manager Users"
+
+schemes: [http, https]
+
+paths:
+  /users:
+    post:
+      tags:
+        - User
+      summary: Registering Users
+      description: Adds users to the databse
+      produce:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: user
+          description: user details that needs to be added to the database
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              password:
+                type: string
+              email:
+                type: string
+              age:
+                type: number
+      responses:
+        200:
+          description: Ok
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: John Doe
+              age:
+                type: number
+                example: 50
+              email:
+                type: string
+                example: johndoe@example.com
+              _id:
+                type: string
+                example: 1234567
+              createdAt:
+                type: string
+                example: 2022-05-12T00:32:43.554+00:00
+              updatedAt:
+                type: string
+                example: 2022-05-13T10:11:56.870+00:00
+        405:
+          description: Invalid Input
+
+  /users/login:
+    post:
+      tags:
+        - User
+      summary: Logs users into the system
+      description: Users details to login
+      produce:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: user
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+      responses:
+        201:
+          description: Ok
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: John Doe
+              age:
+                type: number
+                example: 50
+              email:
+                type: string
+                example: johndoe@example.com
+              _id:
+                type: string
+                example: 1234567
+              createdAt:
+                type: string
+                example: 2022-05-12T00:32:43.554+00:00
+              updatedAt:
+                type: string
+                example: 2022-05-13T10:11:56.870+00:00
+        403:
+          description: Forbidden
+
+  /users/me:
+    get:
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      summary: Returns logged in user
+      description: Returns logged in user
+      responses:
+        200:
+          description: Success
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              age:
+                type: number
+              email:
+                type: string
+              createdAt:
+                type: string
+              updatedAt:
+                type: string
+        401:
+          description: Unauthorized
+
+    patch:
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      summary: "Updates an existing user"
+      description: "Update user user details"
+      produce:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: user
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              password:
+                type: string
+              email:
+                type: string
+              age:
+                type: number
+      responses:
+        200:
+          description: Updated
+        403:
+          description: Bad request
+
+    delete:
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      summary: Deletes autheenticated user
+      responses:
+        200:
+          description: User deleeted
+        401:
+          description: bad request
+
+  /users/logout:
+    post:
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      summary: This logs out a users login
+      description: logs out a user
+      responses:
+        200:
+          description: Logged out
+        500:
+          description: Server error
+
+  /users/logoutAll:
+    post:
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      summary: Logs out all users login
+      description: logs users out from all logins
+      responses:
+        200:
+          description: Logged out
+        500:
+          description: Server error
+
+  /users/me/avatar:
+    post:
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      summary: Uploads avatar
+      description: Uploads users image to cloudinary
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      parameters:
+        - name: avatar
+          in: formData
+          description: file to upload
+          required: false
+          type: file
+      responses:
+        200:
+          description: Successfully uploaded avatar
+        400:
+          description: Something went wrong
+
+    get:
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      summary: Get users avatar
+      description: Returns users uploaded avatar
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Users avatar
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                url:
+                  type: string
+                filename:
+                  type: string
+        500:
+          description: Something went wrong
+
+    delete:
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      summary: Deletes users avatar
+      description: Deletes users avataer
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: filename
+          schema:
+            type: object
+            properties:
+              filename:
+                type: string
+      responses:
+        200:
+          description: Avatar deleted
+        500:
+          description: Something went wrong
+
+securityDefinitions:
+  bearerAuth:
+    type: "apiKey"
+    name: "Authorization"
+    in: "header"

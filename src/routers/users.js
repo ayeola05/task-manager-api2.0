@@ -4,6 +4,8 @@ const User = require("../models/user");
 const auth = require("../middleware/auth");
 const multer = require("multer");
 const sharp = require("sharp");
+const { storage } = require("../cloudinary/index");
+const { cloudinary } = require("../cloudinary/index");
 
 router.post("/users", async (req, res) => {
   const user = new User(req.body);
@@ -85,29 +87,21 @@ router.delete("/users/me", auth, async (req, res) => {
   }
 });
 
-const upload = multer({
-  // dest: "avatars",  //It creates a directory and save your files there
-  limits: {
-    fileSize: 1000000, //1mb
-  },
-  fileFilter(req, file, cb) {
-    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-      return cb(new Error("Please upload an image"));
-    }
-    cb(undefined, true);
-  },
-});
+const upload = multer({ storage });
 
 router.post(
   "/users/me/avatar",
   auth,
   upload.single("avatar"),
   async (req, res) => {
-    const buffer = await sharp(req.file.buffer)
-      .resize({ width: 250, height: 250 })
-      .png()
-      .toBuffer();
-    req.user.avatar = buffer;
+    if (req.user.avatar.length >= 1) {
+      await cloudinary.uploader.destroy(req.user.avatar[0].filename);
+      req.user.avatar = [];
+    }
+    req.user.avatar.push({
+      url: req.file.path,
+      filename: req.file.filename,
+    });
     await req.user.save();
     res.send();
   },
@@ -117,21 +111,17 @@ router.post(
 );
 
 router.delete("/users/me/avatar", auth, async (req, res) => {
+  for (img of req.user.avatar) {
+    await cloudinary.uploader.destroy(img.filename);
+  }
   req.user.avatar = undefined;
   await req.user.save();
   res.send();
 });
 
-router.get("/users/:id/avatar", async (req, res) => {
+router.get("/users/me/avatar", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-
-    if (!user || !user.avatar) {
-      throw new Error();
-    }
-
-    res.set("Content-Type", "image/png");
-    res.send(user.avatar); //accesible in the browser through the user id
+    res.send(req.user.avatar);
   } catch (e) {
     res.status(404).send();
   }
